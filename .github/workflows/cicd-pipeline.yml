@@ -15,6 +15,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    needs: integration
     steps:
       - uses: actions/checkout@v6.0.1
       - run: echo "- Build the artifact"
@@ -28,12 +29,14 @@ jobs:
 
   deploy-development:
     environment: Development
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - run: echo "- Auto-deploy the artifact to the development environment"
 
   deploy-staging:
     environment: Staging
+    needs: [deploy-development, test-artifact]
     runs-on: ubuntu-latest
     steps:
       - run: |
@@ -49,7 +52,7 @@ jobs:
 
   deploy-production:
     environment: Production
-    needs: deploy-staging
+    needs: test-staging
     runs-on: ubuntu-latest
     steps:
       - run: |
@@ -60,6 +63,7 @@ jobs:
 
   test-production:
     runs-on: ubuntu-latest
+    needs: deploy-production
     steps:
       - run: echo "- Test the artifact in the production environment"
       - run: echo "# All tests and deployments have completed successfully!"
